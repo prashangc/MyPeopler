@@ -1,0 +1,3 @@
+enum AttendanceViewMode {
+  LIST,CALENDER
+}

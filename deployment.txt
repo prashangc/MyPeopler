@@ -1,0 +1,36 @@
+-- Package Name
+fvm flutter pub global run rename --bundleId com.abgroupdevfactory.mypeopler --target android
+fvm flutter pub global run rename --bundleId com.abgroup.mypeopler --target ios
+
+-- App Name
+fvm flutter pub global run rename --appname "My Peopler"
+
+-- Clean Project
+fvm flutter clean
+
+-- Get packages
+fvm flutter pub get
+
+-- Set launcher icon -- add flutter_launcher_icons -- then in pubspec.yaml, declare icon file
+fvm flutter pub run flutter_launcher_icons:main
+
+-- Generate upload JKS keystore file
+keytool -genkey -v -keystore ~/mypeopler.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload -storetype JKS
+
+-- Build Gradle setup
+see doc
+
+-- copy generated mypeopler.jks to android/app/
+
+-- key.properties
+storePassword=mypeopler
+keyPassword=mypeopler
+keyAlias=upload
+storeFile=../app/mypeopler.jks
+
+-- Build app bundle -- In android/app/build.gradle make sure changes of signingConfig to signingConfigs.release
+fvm flutter build appbundle
+
+-- Symbols zip file after release only
+zip -r build/app/intermediates/merged_native_libs/release/out/lib
+open build/app/intermediates/merged_native_libs/release/out/lib

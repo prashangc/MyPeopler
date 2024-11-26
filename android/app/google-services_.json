@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "871814481608",
+    "firebase_url": "https://mypeopler-d11af.firebaseio.com",
+    "project_id": "mypeopler-d11af",
+    "storage_bucket": "mypeopler-d11af.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871814481608:android:425ea684809d7e65e247fd",
+        "android_client_info": {
+          "package_name": "com.abgroupdevfactory.mypeopler"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "871814481608-04rhfg781jfht1j81410h8d4krg89oet.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCu1zBkI0n8EQbUKNl22v6F2heQIX_s0Dc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "871814481608-04rhfg781jfht1j81410h8d4krg89oet.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "871814481608-sbm5uftnsh3vrr14b83nt468q0galfdb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.abgroup.mypeopler"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
