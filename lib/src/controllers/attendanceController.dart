@@ -1,4 +1,5 @@
 import 'dart:developer';
+
 import 'package:get/get.dart';
 import 'package:my_peopler/main.dart';
 import 'package:my_peopler/src/core/constants/attendanceViewMode.dart';
@@ -34,7 +35,7 @@ class AttendanceController extends GetxController {
     if (!res.hasError) {
       var attendance = res.data as AttendancesResponse;
       _attendanceResponse.value = attendance;
-  
+
       log(attendances.toString(), name: "AttendanceController");
       isLoadg = false;
       update();
@@ -70,7 +71,7 @@ class AttendanceController extends GetxController {
       var userId = StorageHelper.userId;
       assert(userId != null);
       if (isCheckedIn) {
-        startBackgroundLocator(userId!);
+        startLocator(userId!);
       } else {
         stopBackgroundLocator();
       }

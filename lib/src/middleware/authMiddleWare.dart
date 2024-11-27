@@ -18,7 +18,7 @@ class AuthMiddleware extends GetMiddleware {
 
     var userId = StorageHelper.userId;
     if (userId != null && StorageHelper.isCheckedIn) {
-      startBackgroundLocator(userId);
+      startLocator(userId); // start background service
     } else {
       stopBackgroundLocator();
     }

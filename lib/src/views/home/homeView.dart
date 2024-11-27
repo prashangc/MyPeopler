@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:my_peopler/main.dart';
+import 'package:my_peopler/handle_local_notification.dart';
+import 'package:my_peopler/location_service_repo.dart';
+import 'package:my_peopler/my_shared_pref.dart';
 import 'package:my_peopler/src/controllers/controllers.dart';
 import 'package:my_peopler/src/controllers/sfaCustomerListController.dart';
 import 'package:my_peopler/src/controllers/sfalocationLogsController.dart';
@@ -49,6 +51,7 @@ class _HomeViewState extends State<HomeView> {
   ];
   final RefreshController _refreshController = RefreshController();
   bool showAllFloationActionButtons = false;
+  String? test1, test2, test3;
 
   @override
   void initState() {
@@ -58,6 +61,9 @@ class _HomeViewState extends State<HomeView> {
         StorageHelper.enableBackgroundLocation(false);
       }
       if (Platform.isAndroid) {
+        test1 = PreferenceHelper.getStringFromDevice(tokenKey: "test1");
+        test2 = PreferenceHelper.getStringFromDevice(tokenKey: "test2");
+        test3 = PreferenceHelper.getStringFromDevice(tokenKey: "test3");
         await enableBackgroundTracking();
       }
       await Get.find<SfaLocationLogsController>().getSharedPreference();
@@ -77,25 +83,24 @@ class _HomeViewState extends State<HomeView> {
   enableBackgroundTracking() async {
     if (StorageHelper.liveTracking == "1") {
       StorageHelper.enableBackgroundLocation(true);
-      Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
       if (Platform.isIOS) {
-        Workmanager().registerOneOffTask(
-          "task-identifier",
-          'simpleTask', // Ignored on iOS
-          initialDelay: Duration(minutes: 15),
-          constraints: Constraints(
-              // connected or metered mark the task as requiring internet
-              networkType: NetworkType.not_required,
-              // require external power
-              requiresCharging: false,
-              requiresBatteryNotLow: false,
-              requiresDeviceIdle: false,
-              requiresStorageNotLow: false),
-          inputData: {
-            'token': StorageHelper.token,
-            'code': StorageHelper.userCode
-          },
-        );
+        // Workmanager().registerOneOffTask(
+        //   "task-identifier",
+        //   'simpleTask', // Ignored on iOS
+        //   initialDelay: Duration(minutes: 15),
+        //   constraints: Constraints(
+        //       // connected or metered mark the task as requiring internet
+        //       networkType: NetworkType.not_required,
+        //       // require external power
+        //       requiresCharging: false,
+        //       requiresBatteryNotLow: false,
+        //       requiresDeviceIdle: false,
+        //       requiresStorageNotLow: false),
+        //   inputData: {
+        //     'token': StorageHelper.token,
+        //     'code': StorageHelper.userCode
+        //   },
+        // );
         Fluttertoast.showToast(msg: 'Location Tracking enabled.');
       } else {
         Position locData = await Geolocator.getCurrentPosition();
@@ -114,20 +119,26 @@ class _HomeViewState extends State<HomeView> {
           'speed': locData.speed,
           'speedAccuracy': locData.speedAccuracy,
         };
-        Workmanager().registerPeriodicTask(
-          '1',
-          'simpleTask',
-          inputData: inputData,
-          frequency: Duration(seconds: 1),
-          constraints: Constraints(
-              // connected or metered mark the task as requiring internet
-              networkType: NetworkType.not_required,
-              // require external power
-              requiresCharging: false,
-              requiresBatteryNotLow: false,
-              requiresDeviceIdle: false,
-              requiresStorageNotLow: false),
-        );
+        Workmanager().registerPeriodicTask("100", 'simpleTask',
+            inputData: inputData,
+            frequency: Duration(minutes: 15),
+            constraints: Constraints(
+              networkType: NetworkType.connected,
+            ));
+        // Workmanager().registerPeriodicTask(
+        //   '1',
+        //   'simpleTask',
+        //   inputData: inputData,
+        //   frequency: Duration(seconds: 1),
+        //   constraints: Constraints(
+        //       // connected or metered mark the task as requiring internet
+        //       networkType: NetworkType.not_required,
+        //       // require external power
+        //       requiresCharging: false,
+        //       requiresBatteryNotLow: false,
+        //       requiresDeviceIdle: false,
+        //       requiresStorageNotLow: false),
+        // );
         Fluttertoast.showToast(msg: 'Location Tracking enabled.');
       }
     } else if (StorageHelper.liveTracking == "") {
@@ -160,15 +171,23 @@ class _HomeViewState extends State<HomeView> {
             leading: Builder(builder: (context) {
               return IconButton(
                 onPressed: () {
-                  // Get.find<NavController>().openDrawer();
-                  Scaffold.of(context).openDrawer();
+                  PreferenceHelper.storeStringToDevice(
+                    tokenKey: "test3",
+                    tokenValue: "added on click",
+                  ); // Get.find<NavController>().openDrawer();
+                  // Scaffold.of(context).openDrawer();
+                  HandleLocalNotification.showNotification(
+                    title: "Test title",
+                    body: "Test body",
+                  );
+                  LocationServiceRepository.backgroundLocationFetch();
                 },
                 icon: Icon(
                   Icons.menu,
                 ),
               );
             }),
-            title: Text("MyPeopler"),
+            title: Text("$test3 MyPeopler $test1 $test2"),
             actions: [
               IconButton(
                   onPressed: () {

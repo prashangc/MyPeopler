@@ -20,7 +20,7 @@ import '../../controllers/navController.dart';
 import '../../models/models.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+  const LoginView({super.key});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -337,8 +337,6 @@ class _LoginViewState extends State<LoginView> {
         .setForegroundNotificationPresentationOptions(
             alert: true, sound: true, badge: true);
     callFireBase();
-
-    
   }
 }
 

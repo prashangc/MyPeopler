@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:background_locator_2/keys.dart';
 import 'package:background_locator_2/location_dto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -142,6 +144,115 @@ class LocationServiceRepository {
     String fileName = "$userId.txt";
     await FileManager.clearFileData(fileName);
     // await readLocationForUserId(userId);
+  }
+
+  static void backgroundLocationFetch() async {
+    var prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("userId");
+    if (userId != null) {
+      List<String> listOfLocalData =
+          await LocationServiceRepository.readLocationForUserId(userId);
+
+      if (listOfLocalData.isNotEmpty) {
+        log("Last element: ${listOfLocalData.last}");
+        Map<String, dynamic> lastLocationMap =
+            json.decode(listOfLocalData.last);
+
+        // Convert necessary fields to double or appropriate types
+        lastLocationMap[Keys.ARG_LATITUDE] =
+            double.tryParse(lastLocationMap[Keys.ARG_LATITUDE].toString()) ??
+                0.0;
+        lastLocationMap[Keys.ARG_LONGITUDE] =
+            double.tryParse(lastLocationMap[Keys.ARG_LONGITUDE].toString()) ??
+                0.0;
+        lastLocationMap[Keys.ARG_ACCURACY] =
+            double.tryParse(lastLocationMap[Keys.ARG_ACCURACY].toString()) ??
+                0.0;
+        lastLocationMap[Keys.ARG_ALTITUDE] =
+            double.tryParse(lastLocationMap[Keys.ARG_ALTITUDE].toString()) ??
+                0.0;
+        lastLocationMap[Keys.ARG_SPEED] =
+            double.tryParse(lastLocationMap[Keys.ARG_SPEED].toString()) ?? 0.0;
+        lastLocationMap[Keys.ARG_SPEED_ACCURACY] = double.tryParse(
+                lastLocationMap[Keys.ARG_SPEED_ACCURACY].toString()) ??
+            0.0;
+        lastLocationMap[Keys.ARG_HEADING] =
+            double.tryParse(lastLocationMap[Keys.ARG_HEADING].toString()) ??
+                0.0;
+        lastLocationMap[Keys.ARG_TIME] =
+            double.tryParse(lastLocationMap[Keys.ARG_TIME].toString()) ?? 0.0;
+
+        LocationDto lastLocation = LocationDto.fromJson(lastLocationMap);
+        log("lastLocation: $lastLocation");
+        Position currentLocation = await Geolocator.getCurrentPosition();
+        log("current location: $currentLocation");
+
+        bool isDistMoreThan30m = isDistanceMoreThan30m(
+          lastLat: lastLocation.latitude,
+          lastLng: lastLocation.latitude,
+          currentLat: currentLocation.latitude,
+          currentLng: currentLocation.longitude,
+        );
+        if (isDistMoreThan30m) {
+          storeLocationInTextFile(userId: userId);
+        }
+      } else {
+        log("listOfLocalData is empty");
+      }
+    } else {
+      log("userId in sharedpreference is empty or unable to fetch");
+    }
+  }
+
+  static void storeLocationInTextFile({
+    required int userId,
+  }) async {
+    String fileName = "$userId.txt";
+    File file = File(fileName);
+    Position currentPosition = await Geolocator.getCurrentPosition();
+
+    // Create a LocationDto instance from the Position object
+    LocationDto locationDto = LocationDto.fromJson({
+      Keys.ARG_LATITUDE: currentPosition.latitude,
+      Keys.ARG_LONGITUDE: currentPosition.longitude,
+      Keys.ARG_ACCURACY: currentPosition.accuracy,
+      Keys.ARG_ALTITUDE: currentPosition.altitude,
+      Keys.ARG_SPEED: currentPosition.speed,
+      Keys.ARG_SPEED_ACCURACY: currentPosition.speedAccuracy,
+      Keys.ARG_HEADING: currentPosition.heading,
+      Keys.ARG_TIME: DateTime.now().millisecondsSinceEpoch.toDouble(),
+      Keys.ARG_IS_MOCKED: currentPosition.isMocked,
+      Keys.ARG_PROVIDER: "Geolocator" // Optional, provide your source
+    });
+    // Check if the file exists, if not create it.
+    // if (!file.existsSync()) {
+    //   await file.create(recursive: true);
+    // }
+    String locationDtoJson = json.encode(locationDto.toJson());
+    if (await file.exists()) {
+      await file.writeAsString('$locationDtoJson\n', mode: FileMode.append);
+    } else {
+      FileManager.writeContentInFile(fileName, locationDtoJson);
+    }
+    log("File stored");
+    List<String> fileData = await readLocationForUserId(userId);
+    log("File stored ${fileData.length}");
+  }
+
+  static bool isDistanceMoreThan30m({
+    required double lastLat,
+    required double lastLng,
+    required double currentLat,
+    required double currentLng,
+  }) {
+    double distance = Geolocator.distanceBetween(
+      lastLat,
+      lastLng,
+      currentLat,
+      currentLng,
+    );
+    log("Distance between two location is = $distance");
+    return distance > 30;
   }
 }
 

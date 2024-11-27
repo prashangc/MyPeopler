@@ -1,5 +1,3 @@
-import 'package:background_locator_2/background_locator.dart';
-import 'package:get/state_manager.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:my_peopler/main.dart';
 import 'package:my_peopler/src/core/config/config.dart';
@@ -26,8 +24,8 @@ class StorageHelper {
     } else {
       await prefs.remove(USER_ID);
     }
-    
   }
+
   static int? get userId => box.read(USER_ID);
   // Name of the user
   static setName(String? name) => box.write("name", name);
@@ -61,7 +59,6 @@ class StorageHelper {
     var prefs = await SharedPreferences.getInstance();
     await prefs.setBool(CHECKED_IN, isCheckedIn);
   }
-      
 
   static bool get isCheckedIn => box.read(CHECKED_IN) ?? false;
 

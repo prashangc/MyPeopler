@@ -41,12 +41,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {});
   }
 
-  storeDataLocally() async {
+  writeDataInTextFile() async {
     String fileName = "$userId.txt";
 
     Map<String, dynamic> errorMessage = {
-      'latitude': 0.0,
-      'longitude': 0.0,
+      'latitude': 27.693106,
+      'longitude': 85.280655,
       'accuracy': 0.0,
       'altitude': 0.0,
       'speed': 0.0,
@@ -89,61 +89,9 @@ class _MyAppState extends State<MyApp> {
                       switch (result) {
                         // Enter the log location off in lat, long
                         case ServiceStatus.disabled:
-                          // Map<String, dynamic> inputData = {
-                          //   'token': StorageHelper.token,
-                          //   'code': StorageHelper.userCode,
-                          //   'longitude': locationData!.longitude,
-                          //   'latitude': locationData!.latitude,
-                          //   'timestamp': locationData!
-                          //           .timestamp.millisecondsSinceEpoch ??
-                          //       0,
-                          //   'accuracy': locationData!.accuracy,
-                          //   'altitude': locationData!.altitude,
-                          //   'altitudeAccuracy': locationData!.altitudeAccuracy,
-                          //   'heading': locationData!.heading,
-                          //   'headingAccuracy': locationData!.headingAccuracy,
-                          //   'speed': locationData!.speed,
-                          //   'speedAccuracy': locationData!.speedAccuracy,
-                          // };
-
-                          // Workmanager().registerPeriodicTask(
-                          //   '1',
-                          //   'simpleTask',
-                          //   inputData: inputData,
-                          //   frequency: Duration(minutes: 15),
-                          //   constraints: Constraints(
-                          //       // connected or metered mark the task as requiring internet
-                          //       networkType: NetworkType.not_required,
-                          //       // require external power
-                          //       requiresCharging: false,
-                          //       requiresBatteryNotLow: false,
-                          //       requiresDeviceIdle: false,
-                          //       requiresStorageNotLow: false),
-                          // );
-
                           Fluttertoast.showToast(
                               msg: 'Background service triggered.');
-                          storeDataLocally();
-
-                          // var datetime = DateTime.now().millisecondsSinceEpoch;
-                          // var sampleData = {
-                          //   "latitude": 11111111.11,
-                          //   "longitude": 11111111.11,
-                          //   "accuracy": 100.0,
-                          //   "altitude": 0.0,
-                          //   "speed": 0.0,
-                          //   "speed_accuracy": 0.0,
-                          //   "heading": 0.0,
-                          //   "time": 1731313016381.0,
-                          //   "is_mocked": false,
-                          //   "provider": ""
-                          // };
-
-                          // LocationDto locationOffObj =
-                          //     LocationDto.fromJson(sampleData);
-
-                          // LocationServiceRepository().callback(locationOffObj);
-                          // return child!;
+                          writeDataInTextFile();
                           return SecondInAppDisclourse(
                             hasButton: false,
                           );
