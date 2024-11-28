@@ -226,7 +226,9 @@ class _SfaMenuState extends State<SfaMenu> {
                               },
                               btnOkOnPress: () async {
                                 BaseResponse data = await controller
-                                    .convertListStringToSfaLocationModel();
+                                    .convertListStringToSfaLocationModel(
+                                  isCheckIn: null,
+                                );
                                 if (data.status == 'success') {
                                   MessageHelper.showSuccessAlert(
                                       context: context,
@@ -256,7 +258,7 @@ class _SfaMenuState extends State<SfaMenu> {
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: SizedBox(
-          height: MediaQuery.of(context).size.height + 300,
+          height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
@@ -272,9 +274,7 @@ class _SfaMenuState extends State<SfaMenu> {
                   'General',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                SizedBox(
-                  height: 2,
-                ),
+                SizedBox(height: 12),
                 _buildGeneralOptions(context),
                 // SizedBox(
                 //   height: 8,
@@ -283,9 +283,7 @@ class _SfaMenuState extends State<SfaMenu> {
                   'Reports',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                SizedBox(
-                  height: 5,
-                ),
+                SizedBox(height: 12),
                 _buildReportOptions(context),
               ],
             ),
@@ -296,124 +294,127 @@ class _SfaMenuState extends State<SfaMenu> {
   }
 
   _buildGeneralOptions(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-      child: SizedBox(
-        height: 380, //350,
-        child: GridView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: general.length,
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 150,
-            childAspectRatio: 3 / 3,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemBuilder: (BuildContext context, int index) {
-            return InkWell(
-              onTap: () {
-                if (index == 0) {
-                  Get.toNamed(Routes.SRF_PAGE,
-                      arguments: ['daily', 'officeView']);
-                } else if (index == 1) {
-                  // Get.toNamed(Routes.SRF_PAGE,
-                  //     arguments: ['all', 'officeView']);
-                } else if (index == 2) {
-                  Get.toNamed(Routes.SRF_PAGE, arguments: ['all', 'orderView']);
-                } else if (index == 3) {
-                  Get.toNamed(Routes.TOUR_PLAN);
-                } else if (index == 4) {
-                  Get.toNamed(Routes.PAYMENT_SCHEDULE);
-                } else if (index == 5) {
-                  Get.toNamed(Routes.LOCATION_LOG);
-                } else if (index == 6) {
-                  Get.toNamed(Routes.Client_Detail);
-                }
-              },
-              child: Container(
-                alignment: Alignment.center,
-                height: AppSize.s100,
-                width: 125,
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                    color: general[index].color,
-                    borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(color: general[index].color)),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    general[index].icon ?? SizedBox.shrink(),
-                    Text(
-                      general[index].name,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    index == 0
-                        ? GetBuilder<SfaCustomerListController>(
-                            builder: (controller) {
-                            totalCustomerToday = 0;
-                            for (var e in controller
-                                .sfaCustomerList.clientLists.entries) {
-                              totalCustomerToday =
-                                  totalCustomerToday + e.value.length;
-                            }
-                            return Column(
-                              children: [
-                                SizedBox(
-                                  height: 3,
-                                ),
-                                Container(
-                                  width: 100,
-                                  decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(5))),
-                                  child: Text(
-                                    totalCustomerToday.toString(),
-                                    style: TextStyle(color: Colors.white),
-                                    textAlign: TextAlign.center,
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+        child: SizedBox(
+          // height: 380, //350,
+          child: GridView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: general.length,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 150,
+              childAspectRatio: 3 / 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemBuilder: (BuildContext context, int index) {
+              return InkWell(
+                onTap: () {
+                  if (index == 0) {
+                    Get.toNamed(Routes.SRF_PAGE,
+                        arguments: ['daily', 'officeView']);
+                  } else if (index == 1) {
+                    // Get.toNamed(Routes.SRF_PAGE,
+                    //     arguments: ['all', 'officeView']);
+                  } else if (index == 2) {
+                    Get.toNamed(Routes.SRF_PAGE,
+                        arguments: ['all', 'orderView']);
+                  } else if (index == 3) {
+                    Get.toNamed(Routes.TOUR_PLAN);
+                  } else if (index == 4) {
+                    Get.toNamed(Routes.PAYMENT_SCHEDULE);
+                  } else if (index == 5) {
+                    Get.toNamed(Routes.LOCATION_LOG);
+                  } else if (index == 6) {
+                    Get.toNamed(Routes.Client_Detail);
+                  }
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  height: AppSize.s100,
+                  width: 125,
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                      color: general[index].color,
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(color: general[index].color)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      general[index].icon ?? SizedBox.shrink(),
+                      Text(
+                        general[index].name,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      index == 0
+                          ? GetBuilder<SfaCustomerListController>(
+                              builder: (controller) {
+                              totalCustomerToday = 0;
+                              for (var e in controller
+                                  .sfaCustomerList.clientLists.entries) {
+                                totalCustomerToday =
+                                    totalCustomerToday + e.value.length;
+                              }
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    height: 3,
                                   ),
-                                ),
-                              ],
-                            );
-                          })
-                        : index == 1
-                            ? GetBuilder<SfaCustomerListController>(
-                                builder: (controller) {
-                                totalCustomerAll = 0;
-                                for (var e in controller
-                                    .sfaCustomerListAll.clientLists.entries) {
-                                  totalCustomerAll =
-                                      totalCustomerAll + e.value.length;
-                                }
-                                return Column(
-                                  children: [
-                                    SizedBox(
-                                      height: 3,
+                                  Container(
+                                    width: 100,
+                                    decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5))),
+                                    child: Text(
+                                      totalCustomerToday.toString(),
+                                      style: TextStyle(color: Colors.white),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    Container(
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(5))),
-                                      child: Text(
-                                        totalCustomerAll.toString(),
-                                        style: TextStyle(color: Colors.white),
-                                        textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              );
+                            })
+                          : index == 1
+                              ? GetBuilder<SfaCustomerListController>(
+                                  builder: (controller) {
+                                  totalCustomerAll = 0;
+                                  for (var e in controller
+                                      .sfaCustomerListAll.clientLists.entries) {
+                                    totalCustomerAll =
+                                        totalCustomerAll + e.value.length;
+                                  }
+                                  return Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 3,
                                       ),
-                                    ),
-                                  ],
-                                );
-                              })
-                            : SizedBox.shrink()
-                  ],
+                                      Container(
+                                        width: 100,
+                                        decoration: BoxDecoration(
+                                            color: Colors.black,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(5))),
+                                        child: Text(
+                                          totalCustomerAll.toString(),
+                                          style: TextStyle(color: Colors.white),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                })
+                              : SizedBox.shrink()
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

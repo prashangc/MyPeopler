@@ -1,8 +1,6 @@
-import 'package:background_locator_2/background_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:my_peopler/main.dart';
 import 'package:my_peopler/src/controllers/sfalocationLogsController.dart';
 import 'package:my_peopler/src/helpers/helpers.dart';
 import 'package:my_peopler/src/models/baseResponse.dart';
@@ -57,8 +55,8 @@ class _SyncLocationLogsViewState extends State<SyncLocationLogsView> {
             GetBuilder<SfaLocationLogsController>(builder: (controller) {
               return SubmitButton(
                 onPressed: () async {
-                  BaseResponse data =
-                      await controller.convertListStringToSfaLocationModel();
+                  BaseResponse data = await controller
+                      .convertListStringToSfaLocationModel(isCheckIn: null);
                   if (data.status == 'success') {
                     MessageHelper.showSuccessAlert(
                         context: context,

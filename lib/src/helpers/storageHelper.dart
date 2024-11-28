@@ -1,10 +1,9 @@
 import 'package:get_storage/get_storage.dart';
-import 'package:my_peopler/main.dart';
 import 'package:my_peopler/src/core/config/config.dart';
 import 'package:my_peopler/src/models/login/customer_login/customerLogin.dart';
 import 'package:my_peopler/src/models/user/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:workmanager/workmanager.dart';
+// import 'package:workmanager/workmanager.dart';
 
 final box = GetStorage(LOCAL_STORAGE);
 
@@ -188,9 +187,9 @@ class StorageHelper {
     var locationAR = locationAccept;
     if (enableBackgroundlocation == true) {
       enableBackgroundLocation(false);
-      Workmanager().cancelAll();
+      // Workmanager().cancelAll();
     }
-    stopBackgroundLocator();
+    // stopBackgroundLocator();
 
     await box.erase();
     if (remember ?? false) {

@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
-import 'package:my_peopler/main.dart';
 import 'package:my_peopler/src/controllers/authController.dart';
 import 'package:my_peopler/src/core/constants/userState.dart';
 import 'package:my_peopler/src/helpers/helpers.dart';
@@ -18,9 +17,9 @@ class AuthMiddleware extends GetMiddleware {
 
     var userId = StorageHelper.userId;
     if (userId != null && StorageHelper.isCheckedIn) {
-      startLocator(userId); // start background service
+      // startLocator(userId); // start background service
     } else {
-      stopBackgroundLocator();
+      // stopBackgroundLocator();
     }
 
     return super.onPageCalled(page);

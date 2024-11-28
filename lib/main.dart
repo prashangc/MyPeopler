@@ -1,68 +1,23 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:ui';
 
-import 'package:background_locator_2/background_locator.dart';
-import 'package:background_locator_2/settings/android_settings.dart' as bg;
-import 'package:background_locator_2/settings/ios_settings.dart';
-import 'package:background_locator_2/settings/locator_settings.dart' as lo;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:my_peopler/firebase_options.dart';
 import 'package:my_peopler/handle_local_notification.dart';
-import 'package:my_peopler/location_call_back_handler.dart';
+import 'package:my_peopler/location_service_repo.dart';
 import 'package:my_peopler/my_shared_pref.dart';
 import 'package:my_peopler/src/app.dart';
 import 'package:my_peopler/src/core/config/config.dart';
 import 'package:my_peopler/src/core/di/injection.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:workmanager/workmanager.dart';
-
-@pragma(
-    'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
-void callbackDispatcher() async {
-  Workmanager().executeTask((task, inputData) async {
-    try {
-      await PreferenceHelper.init();
-      // Simulate task processing
-      Position locData = await Geolocator.getCurrentPosition();
-
-      PreferenceHelper.storeStringToDevice(
-        tokenKey: "test1",
-        tokenValue: locData.latitude.toString(),
-      );
-      PreferenceHelper.storeStringToDevice(
-        tokenKey: "test2",
-        tokenValue: "random",
-      );
-
-      HandleLocalNotification.showNotification(
-        title: "Test input data = ${inputData!['name']}",
-        body: "Test body",
-      );
-
-      // Simulate a conditional outcome
-      if (task == "retryTask") {
-        // Return false for retry
-        return Future.value(false);
-      }
-
-      // Return true for success
-      return Future.value(true);
-    } catch (e) {
-      // Log the error or handle it appropriately
-      print("Error in task: $e");
-
-      // Return error outcome
-      return Future.error("Task failed due to an error: $e");
-    }
-  });
-}
 
 SharedPreferences? prefs;
 Future<void> main() async {
@@ -71,33 +26,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  HandleLocalNotification.startBackgroundService();
   await GetStorage.init(LOCAL_STORAGE);
   configureDependencies(Env.prod);
-  await _checkLocationPermission();
   checkForUpdate();
-  Workmanager().initialize(
-    callbackDispatcher,
-    isInDebugMode: true,
-  );
-}
-
-Future<bool> _checkLocationPermission() async {
-  final locationStatus = await Permission.locationAlways.status;
-  switch (locationStatus) {
-    case PermissionStatus.denied:
-    case PermissionStatus.restricted:
-    case PermissionStatus.limited:
-    case PermissionStatus.provisional:
-    case PermissionStatus.permanentlyDenied:
-      final newStatus = await Permission.locationAlways.request();
-      if (newStatus == PermissionStatus.granted) {
-        return true;
-      } else {
-        return false;
-      }
-    case PermissionStatus.granted:
-      return true;
-  }
 }
 
 Future<void> checkForUpdate() async {
@@ -130,45 +62,61 @@ Future<void> checkForUpdate() async {
   }
 }
 
-Future<void> stopBackgroundLocator() async {
-  var isAlreadyRunning = await BackgroundLocator.isServiceRunning();
-  if (!isAlreadyRunning) return;
-  await BackgroundLocator.unRegisterLocationUpdate();
+@pragma('vm:entry-point')
+Future<bool> onIosBackground(ServiceInstance service) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+  return true;
 }
 
-Future<void> startLocator(int userId) async {
-  var isAlreadyRunning = await BackgroundLocator.isServiceRunning();
-  if (isAlreadyRunning) return;
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  // Only available for flutter 3.0.0 and later
+  // DartPluginRegistrant.ensureInitialized();
 
-  lo.LocationAccuracy locationAccuracy = lo.LocationAccuracy.HIGH;
-  double distanceFilter = 30;
-  Map<String, dynamic> data = {"userId": userId};
+  // For flutter prior to version 3.0.0
+  // We have to register the plugin manually
+  /// OPTIONAL when use custom notification
+  // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  //     FlutterLocalNotificationsPlugin();
 
-  await BackgroundLocator.registerLocationUpdate(
-    LocationCallbackHandler.callback,
-    initCallback: LocationCallbackHandler.initCallback,
-    initDataCallback: data,
-    disposeCallback: LocationCallbackHandler.disposeCallback,
-    iosSettings: IOSSettings(
-        accuracy: locationAccuracy,
-        distanceFilter: distanceFilter,
-        stopWithTerminate: false,
-        showsBackgroundLocationIndicator: true),
-    autoStop: false,
-    androidSettings: bg.AndroidSettings(
-      accuracy: locationAccuracy,
-      interval: 5,
-      distanceFilter: distanceFilter,
-      client: bg.LocationClient.google,
-      androidNotificationSettings: bg.AndroidNotificationSettings(
-        notificationChannelName: 'Location tracking',
-        notificationTitle: 'Location Tracking',
-        notificationMsg: 'Tracking location in background',
-        notificationBigMsg: 'Background Location tracking is on.',
-        notificationIcon: 'launcher_icon',
-        notificationIconColor: Colors.grey,
-        notificationTapCallback: LocationCallbackHandler.notificationCallback,
-      ),
-    ),
-  );
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsForegroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  // bring to foreground
+  Timer.periodic(const Duration(seconds: 1), (timer) async {
+    if (service is AndroidServiceInstance) {
+      var prefs = await SharedPreferences.getInstance();
+      int? userId = prefs.getInt("userId");
+      if (userId != null) {
+        List<String> listOfLocalData =
+            await LocationServiceRepository.readLocationForUserId(userId);
+        if (listOfLocalData.isNotEmpty) {
+          LocationServiceRepository.backgroundLocationFetch(listOfLocalData);
+        } else {
+          log('FILE IS EMPTY');
+        }
+      }
+    }
+
+    Position? position = await Geolocator.getCurrentPosition();
+    service.invoke(
+      'update',
+      {
+        "current_date": DateTime.now().toIso8601String(),
+        "lat": position.latitude
+      },
+    );
+  });
 }

@@ -1,13 +1,44 @@
 import 'dart:math' as math;
 
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:my_peopler/main.dart';
 
 class HandleLocalNotification {
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final FlutterBackgroundService service = FlutterBackgroundService();
 
-  static Future<NotificationDetails> createAndroidNotificationChannel(
-      {required String title}) async {
+  static void startBackgroundService() async {
+    await createAndroidNotificationChannel();
+    await service.configure(
+      androidConfiguration: AndroidConfiguration(
+        // this will be executed when app is in foreground or background in separated isolate
+        onStart: onStart,
+
+        // auto start service
+        autoStart: true,
+        isForegroundMode: false,
+        notificationChannelId: 'high_importance_channel',
+        initialNotificationTitle: 'Location Tracking',
+        initialNotificationContent: 'App is tracking your location',
+        foregroundServiceNotificationId: 888,
+        foregroundServiceTypes: [AndroidForegroundType.location],
+      ),
+      iosConfiguration: IosConfiguration(
+        // auto start service
+        autoStart: true,
+
+        // this will be executed when app is in foreground in separated isolate
+        onForeground: onStart,
+
+        // you have to enable background fetch capability on xcode project
+        onBackground: onIosBackground,
+      ),
+    );
+  }
+
+  static Future<NotificationDetails> createAndroidNotificationChannel() async {
     AndroidNotificationChannel androidNotificationChannel =
         const AndroidNotificationChannel(
       "high_importance_channel",
@@ -48,7 +79,7 @@ class HandleLocalNotification {
     required String body,
   }) async {
     NotificationDetails notificationDetails =
-        await createAndroidNotificationChannel(title: title);
+        await createAndroidNotificationChannel();
     _flutterLocalNotificationsPlugin.show(
       1,
       title,

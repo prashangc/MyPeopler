@@ -45,8 +45,8 @@ class _MyAppState extends State<MyApp> {
     String fileName = "$userId.txt";
 
     Map<String, dynamic> errorMessage = {
-      'latitude': 27.693106,
-      'longitude': 85.280655,
+      'latitude': 0.0,
+      'longitude': 0.0,
       'accuracy': 0.0,
       'altitude': 0.0,
       'speed': 0.0,

@@ -2,12 +2,8 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:my_peopler/handle_local_notification.dart';
-import 'package:my_peopler/location_service_repo.dart';
-import 'package:my_peopler/my_shared_pref.dart';
 import 'package:my_peopler/src/controllers/controllers.dart';
 import 'package:my_peopler/src/controllers/sfaCustomerListController.dart';
 import 'package:my_peopler/src/controllers/sfalocationLogsController.dart';
@@ -21,7 +17,6 @@ import 'package:my_peopler/src/widgets/myDrawer.dart';
 import 'package:my_peopler/src/widgets/noticeCard.dart';
 import 'package:my_peopler/utils.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:workmanager/workmanager.dart';
 
 class Options {
   String name;
@@ -51,7 +46,7 @@ class _HomeViewState extends State<HomeView> {
   ];
   final RefreshController _refreshController = RefreshController();
   bool showAllFloationActionButtons = false;
-  String? test1, test2, test3;
+  static const platform = MethodChannel('com.example.battery_optimization');
 
   @override
   void initState() {
@@ -61,10 +56,7 @@ class _HomeViewState extends State<HomeView> {
         StorageHelper.enableBackgroundLocation(false);
       }
       if (Platform.isAndroid) {
-        test1 = PreferenceHelper.getStringFromDevice(tokenKey: "test1");
-        test2 = PreferenceHelper.getStringFromDevice(tokenKey: "test2");
-        test3 = PreferenceHelper.getStringFromDevice(tokenKey: "test3");
-        await enableBackgroundTracking();
+        // await enableBackgroundTracking();
       }
       await Get.find<SfaLocationLogsController>().getSharedPreference();
     });
@@ -79,77 +71,6 @@ class _HomeViewState extends State<HomeView> {
   }
 
   int totalCustomer = 0;
-
-  enableBackgroundTracking() async {
-    if (StorageHelper.liveTracking == "1") {
-      StorageHelper.enableBackgroundLocation(true);
-      if (Platform.isIOS) {
-        // Workmanager().registerOneOffTask(
-        //   "task-identifier",
-        //   'simpleTask', // Ignored on iOS
-        //   initialDelay: Duration(minutes: 15),
-        //   constraints: Constraints(
-        //       // connected or metered mark the task as requiring internet
-        //       networkType: NetworkType.not_required,
-        //       // require external power
-        //       requiresCharging: false,
-        //       requiresBatteryNotLow: false,
-        //       requiresDeviceIdle: false,
-        //       requiresStorageNotLow: false),
-        //   inputData: {
-        //     'token': StorageHelper.token,
-        //     'code': StorageHelper.userCode
-        //   },
-        // );
-        Fluttertoast.showToast(msg: 'Location Tracking enabled.');
-      } else {
-        Position locData = await Geolocator.getCurrentPosition();
-
-        Map<String, dynamic> inputData = {
-          'token': StorageHelper.token,
-          'code': StorageHelper.userCode,
-          'longitude': locData.longitude,
-          'latitude': locData.latitude,
-          'timestamp': locData.timestamp.millisecondsSinceEpoch ?? 0,
-          'accuracy': locData.accuracy,
-          'altitude': locData.altitude,
-          'altitudeAccuracy': locData.altitudeAccuracy,
-          'heading': locData.heading,
-          'headingAccuracy': locData.headingAccuracy,
-          'speed': locData.speed,
-          'speedAccuracy': locData.speedAccuracy,
-        };
-        Workmanager().registerPeriodicTask("100", 'simpleTask',
-            inputData: inputData,
-            frequency: Duration(minutes: 15),
-            constraints: Constraints(
-              networkType: NetworkType.connected,
-            ));
-        // Workmanager().registerPeriodicTask(
-        //   '1',
-        //   'simpleTask',
-        //   inputData: inputData,
-        //   frequency: Duration(seconds: 1),
-        //   constraints: Constraints(
-        //       // connected or metered mark the task as requiring internet
-        //       networkType: NetworkType.not_required,
-        //       // require external power
-        //       requiresCharging: false,
-        //       requiresBatteryNotLow: false,
-        //       requiresDeviceIdle: false,
-        //       requiresStorageNotLow: false),
-        // );
-        Fluttertoast.showToast(msg: 'Location Tracking enabled.');
-      }
-    } else if (StorageHelper.liveTracking == "") {
-      Fluttertoast.showToast(
-          msg: 'Logout and re-login to enable location tracking');
-    } else {
-      Fluttertoast.showToast(
-          msg:
-              'Location Tracking not enabled by admin. Please contact your admin if you want to enable location tracking.');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,24 +91,18 @@ class _HomeViewState extends State<HomeView> {
           appBar: AppBar(
             leading: Builder(builder: (context) {
               return IconButton(
-                onPressed: () {
-                  PreferenceHelper.storeStringToDevice(
-                    tokenKey: "test3",
-                    tokenValue: "added on click",
-                  ); // Get.find<NavController>().openDrawer();
-                  // Scaffold.of(context).openDrawer();
-                  HandleLocalNotification.showNotification(
-                    title: "Test title",
-                    body: "Test body",
-                  );
-                  LocationServiceRepository.backgroundLocationFetch();
+                onPressed: () async {
+                  // var prefs = await SharedPreferences.getInstance();
+                  // int? userId = prefs.getInt("userId");
+                  // LocationServiceRepository.clearLocationDataForUserId(userId!);
+                  Scaffold.of(context).openDrawer();
                 },
                 icon: Icon(
                   Icons.menu,
                 ),
               );
             }),
-            title: Text("$test3 MyPeopler $test1 $test2"),
+            title: Text("MyPeopler"),
             actions: [
               IconButton(
                   onPressed: () {

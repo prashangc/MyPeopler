@@ -114,10 +114,15 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                           WidgetStatePropertyAll(Size(double.maxFinite, 50))),
                   onPressed: () {
                     // if (_formKey.currentState!.validate()) {
-                    getAltitude(controller, contextmain, details: [
-                      explainController.text,
-                      title(checkOut, beforeLunch, afterLunch, timeDifference)
-                    ]);
+                    getAltitude(
+                      controller,
+                      contextmain,
+                      isCheckIn: true,
+                      details: [
+                        explainController.text,
+                        title(checkOut, beforeLunch, afterLunch, timeDifference)
+                      ],
+                    );
                     // }
                   },
                   child: Text(
@@ -131,8 +136,12 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
     );
   }
 
-  getAltitude(AttendanceController controller, BuildContext context,
-      {List<String?>? details}) async {
+  getAltitude(
+    AttendanceController controller,
+    BuildContext context, {
+    List<String?>? details,
+    required bool isCheckIn,
+  }) async {
     controller.freezeUI();
     Position locationData = await Geolocator.getCurrentPosition();
     double height = locationData.altitude * 3.28084;
@@ -154,7 +163,12 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                 (double.parse(_attendanceBoundary[i].elevation.toString()) +
                         1 >=
                     height))) {
-          await _punch(controller, context, details: details);
+          await _punch(
+            controller,
+            context,
+            details: details,
+            isCheckIn: isCheckIn,
+          );
           break;
         } else {
           if (i == _attendanceBoundary.length - 1) {
@@ -181,7 +195,12 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
         }
       }
     } else {
-      await _punch(controller, context, details: details);
+      await _punch(
+        controller,
+        context,
+        details: details,
+        isCheckIn: isCheckIn,
+      );
     }
   }
 
@@ -228,7 +247,7 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
               child: Column(
                 children: [
                   Text(
-                    "ance Status",
+                    "Total attendance Status",
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
 
@@ -300,18 +319,24 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                                                               afterLunch: true);
                                                         } else {
                                                           await getAltitude(
-                                                              controller,
-                                                              contextmain);
+                                                            controller,
+                                                            contextmain,
+                                                            isCheckIn: true,
+                                                          );
                                                         }
                                                       } else {
                                                         await getAltitude(
-                                                            controller,
-                                                            contextmain);
+                                                          controller,
+                                                          contextmain,
+                                                          isCheckIn: true,
+                                                        );
                                                       }
                                                     } else {
                                                       await getAltitude(
-                                                          controller,
-                                                          contextmain);
+                                                        controller,
+                                                        contextmain,
+                                                        isCheckIn: true,
+                                                      );
                                                     }
                                                   },
                                                 );
@@ -353,12 +378,17 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                                                         timeDifference);
                                                   } else {
                                                     await getAltitude(
-                                                        controller,
-                                                        contextmain);
+                                                      controller,
+                                                      isCheckIn: true,
+                                                      contextmain,
+                                                    );
                                                   }
                                                 } else {
                                                   await getAltitude(
-                                                      controller, contextmain);
+                                                    isCheckIn: true,
+                                                    controller,
+                                                    contextmain,
+                                                  );
                                                 }
                                               },
                                             );
@@ -397,11 +427,17 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                                                     timeDifference);
                                               } else {
                                                 await getAltitude(
-                                                    controller, contextmain);
+                                                  controller,
+                                                  contextmain,
+                                                  isCheckIn: true,
+                                                );
                                               }
                                             } else {
                                               await getAltitude(
-                                                  controller, contextmain);
+                                                controller,
+                                                contextmain,
+                                                isCheckIn: true,
+                                              );
                                             }
                                           },
                                         );
@@ -549,8 +585,10 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                                                               checkOut: true);
                                                         } else {
                                                           await getAltitude(
-                                                              controller,
-                                                              contextmain);
+                                                            controller,
+                                                            contextmain,
+                                                            isCheckIn: false,
+                                                          );
                                                         }
                                                       } else if (checkOutAttendance
                                                           .isBefore(graceEndTime
@@ -568,12 +606,15 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                                                       } else {
                                                         await getAltitude(
                                                             controller,
+                                                            isCheckIn: false,
                                                             contextmain);
                                                       }
                                                     } else {
                                                       await getAltitude(
-                                                          controller,
-                                                          contextmain);
+                                                        isCheckIn: false,
+                                                        controller,
+                                                        contextmain,
+                                                      );
                                                     }
                                                   },
                                                 );
@@ -661,13 +702,17 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
     });
   }
 
-  Future<void> _punch(AttendanceController controller, BuildContext context,
-      {List<String?>? details}) async {
+  Future<void> _punch(
+    AttendanceController controller,
+    BuildContext context, {
+    List<String?>? details,
+    required bool isCheckIn,
+  }) async {
     await controller.punch(details);
     if (StorageHelper.liveTracking == "1") {
       if (Platform.isAndroid) {
         BaseResponse data = await Get.find<SfaLocationLogsController>()
-            .convertListStringToSfaLocationModel();
+            .convertListStringToSfaLocationModel(isCheckIn: isCheckIn);
         if (data.status == 'success') {
           showDialogBox = false;
           MessageHelper.showSuccessAlert(
