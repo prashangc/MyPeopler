@@ -9,7 +9,7 @@ import 'package:my_peopler/src/routes/appPages.dart';
 import 'package:my_peopler/src/views/profile/widgets/profileImgBox.dart';
 
 class MyDrawer extends StatelessWidget {
-  const MyDrawer({Key? key}) : super(key: key);
+  const MyDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {

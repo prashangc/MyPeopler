@@ -4,12 +4,8 @@ import 'package:my_peopler/src/controllers/attendanceController.dart';
 import 'package:my_peopler/src/controllers/expenseController.dart';
 import 'package:my_peopler/src/controllers/profileController.dart';
 import 'package:my_peopler/src/controllers/sfaProductListController.dart';
-import 'package:my_peopler/src/controllers/sfaTourPlanController.dart';
-import 'package:my_peopler/src/helpers/helpers.dart';
-import 'package:my_peopler/src/models/expenses/expense_model.dart';
 import 'package:my_peopler/src/resources/color_manager.dart';
 import 'package:my_peopler/src/routes/appPages.dart';
-import 'package:my_peopler/src/utils/utils.dart';
 import 'package:my_peopler/src/views/expenses/expense_bottomsheet.dart';
 import 'package:my_peopler/src/widgets/no_data_widget.dart';
 import 'package:nepali_date_picker/nepali_date_picker.dart';
@@ -84,146 +80,153 @@ class _ExpensesDateState extends State<ExpensesDate> {
         body: GetBuilder<ExpenseController>(builder: (controller) {
           var expensekeys = controller.expenseKeys;
 
-            if (controller.isLoading) {
-              return Center(child: CircularProgressIndicator());
-            } else if (controller.expenses.isEmpty) {
-              return SmartRefresher(
-                  controller: refreshController,
-                  onRefresh: () async {
-                    subOrdinateId = null;
-                    startDate = null;
-                    endDate = null;
-                    await Get.find<ExpenseController>()
-                        .getExpenses(employeeId: getUserId(), type: 'own');
-                    await Get.find<ExpenseController>().getExpenseCategories();
-                    await Get.find<AttendanceController>()
-                        .getExpenseAttendance(null, null, null);
-                    refreshController.refreshCompleted();
-                  },
-                  child: NoDataWidget());
-            }
+          if (controller.isLoading) {
+            return Center(child: CircularProgressIndicator());
+          } else if (controller.expenses.isEmpty) {
             return SmartRefresher(
                 controller: refreshController,
                 onRefresh: () async {
-                  setState(() {
-                    subOrdinateId = null;
-                    startDate = null;
-                    endDate = null;
-                  });
+                  subOrdinateId = null;
+                  startDate = null;
+                  endDate = null;
                   await Get.find<ExpenseController>()
                       .getExpenses(employeeId: getUserId(), type: 'own');
                   await Get.find<ExpenseController>().getExpenseCategories();
+                  await Get.find<AttendanceController>()
+                      .getExpenseAttendance(null, null, null);
                   refreshController.refreshCompleted();
                 },
-                child: ListView.separated(
-                    itemBuilder: (context, index) {
-                      var expenseDate = expensekeys[index];
-                      var response = controller.response?.data ?? {};
-                      var dataWithId = response[expenseDate] ?? {};
-                      var employeeId = dataWithId.keys.first;
-                      
-                      var expensesById = dataWithId[employeeId] ?? [];
-                      
-                      if(expensesById.any((element) => element.status == 'pending')) {
-                          status = 'pending';
-                        }
-                      else if(expensesById.every((e) => e.status == 'approved')) {
-                        status = 'approved';
-                      } else if(expensesById.every((e) => e.status == 'rejected')){
-                        status = 'rejected';
-                      } else {
-                        status = 'completed';
-                      }
-                      var totalAskingExpense = expensesById.fold(0 , ((previousValue, element) => previousValue + int.parse(element.askingAmount)));
-                      var totalApprovedExpense = expensesById.fold(0 , ((previousValue, element) {
+                child: NoDataWidget());
+          }
+          return SmartRefresher(
+              controller: refreshController,
+              onRefresh: () async {
+                setState(() {
+                  subOrdinateId = null;
+                  startDate = null;
+                  endDate = null;
+                });
+                await Get.find<ExpenseController>()
+                    .getExpenses(employeeId: getUserId(), type: 'own');
+                await Get.find<ExpenseController>().getExpenseCategories();
+                refreshController.refreshCompleted();
+              },
+              child: ListView.separated(
+                  itemBuilder: (context, index) {
+                    var expenseDate = expensekeys[index];
+                    var response = controller.response?.data ?? {};
+                    var dataWithId = response[expenseDate] ?? {};
+                    var employeeId = dataWithId.keys.first;
+
+                    var expensesById = dataWithId[employeeId] ?? [];
+
+                    if (expensesById
+                        .any((element) => element.status == 'pending')) {
+                      status = 'pending';
+                    } else if (expensesById
+                        .every((e) => e.status == 'approved')) {
+                      status = 'approved';
+                    } else if (expensesById
+                        .every((e) => e.status == 'rejected')) {
+                      status = 'rejected';
+                    } else {
+                      status = 'completed';
+                    }
+                    var totalAskingExpense = expensesById.fold(
+                        0,
+                        ((previousValue, element) =>
+                            previousValue + int.parse(element.askingAmount)));
+                    var totalApprovedExpense =
+                        expensesById.fold(0, ((previousValue, element) {
                       int approvedAmount = element.approvedAmount ?? 0;
-                      return  previousValue + approvedAmount;
-                      }));
-                      return GestureDetector(
-                        onTap: () {
-                          Get.toNamed(Routes.EXPENSES_VIEW, arguments: [
-                            expenseDate,
-                            startDate,
-                            endDate,
-                            subOrdinateId,
-                            false,
-                            null,
-                            null
-                          ]);
-                        },
-                        child: Container(
-                          height: 150,
-                          padding: EdgeInsets.only(top: 0, left: 8, right: 8),
-                          margin: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                offset: Offset(0, 1),
-                                blurRadius: 5,
-                                color: Colors.black.withOpacity(0.3),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_month_sharp,
-                                    color: Colors.blue,
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    expenseDate,
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: ColorManager.primaryCol),
-                                  ),
-                                  Spacer(),
-                                  Container(
-                                      height: 20,
-                                      width: 70,
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          color: status == 'pending'
-                                              ? Colors.orange
-                                              : status == 'approved'
-                                                  ? Colors.green
-                                                  : status == 'rejected'
-                                                      ? Colors.red
-                                                      : const Color.fromARGB(
-                                                  255, 200, 156, 24)),
-                                      child: Center(
-                                          child: Text(
-                                        status,
-                                        style: TextStyle(color: Colors.white),
-                                      )))
-                                ],
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Text('Total Asking Amount:  Rs.${totalAskingExpense.toString()}'),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Text('Total Approved Amount:  Rs.${totalApprovedExpense.toString()}'),
-                            ],
-                          ),
+                      return previousValue + approvedAmount;
+                    }));
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(Routes.EXPENSES_VIEW, arguments: [
+                          expenseDate,
+                          startDate,
+                          endDate,
+                          subOrdinateId,
+                          false,
+                          null,
+                          null
+                        ]);
+                      },
+                      child: Container(
+                        height: 150,
+                        padding: EdgeInsets.only(top: 0, left: 8, right: 8),
+                        margin: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: Offset(0, 1),
+                              blurRadius: 5,
+                              color: Colors.black.withOpacity(0.3),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    separatorBuilder: (context, index) => SizedBox(
-                          height: 0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_month_sharp,
+                                  color: Colors.blue,
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  expenseDate,
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: ColorManager.primaryCol),
+                                ),
+                                Spacer(),
+                                Container(
+                                    height: 20,
+                                    width: 70,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: status == 'pending'
+                                            ? Colors.orange
+                                            : status == 'approved'
+                                                ? Colors.green
+                                                : status == 'rejected'
+                                                    ? Colors.red
+                                                    : const Color.fromARGB(
+                                                        255, 200, 156, 24)),
+                                    child: Center(
+                                        child: Text(
+                                      status,
+                                      style: TextStyle(color: Colors.white),
+                                    )))
+                              ],
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                                'Total Asking Amount:  Rs.${totalAskingExpense.toString()}'),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                                'Total Approved Amount:  Rs.${totalApprovedExpense.toString()}'),
+                          ],
                         ),
-                    itemCount: expensekeys.length));
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) => SizedBox(
+                        height: 0,
+                      ),
+                  itemCount: expensekeys.length));
         }));
   }
 
@@ -232,7 +235,10 @@ class _ExpensesDateState extends State<ExpensesDate> {
     var dates = await Get.bottomSheet(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+        ),
         ExpenseBottomSheet(
             userId: getUserId()!,
             controller: controller,
@@ -246,5 +252,4 @@ class _ExpensesDateState extends State<ExpensesDate> {
       });
     }
   }
-
 }

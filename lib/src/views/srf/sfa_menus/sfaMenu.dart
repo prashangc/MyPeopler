@@ -271,15 +271,6 @@ class _SfaMenuState extends State<SfaMenu> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                FutureBuilder(
-                    future: FlutterBackgroundService().isRunning(),
-                    builder: (c, AsyncSnapshot<bool> data) {
-                      if (data.hasData) {
-                        return Text(data.data.toString());
-                      } else {
-                        return Text("no data");
-                      }
-                    }),
                 //  GetBuilder<SfaCustomerListController>(builder: (controller)
                 //  {
                 //   return _buildDashBoard(context,controller);

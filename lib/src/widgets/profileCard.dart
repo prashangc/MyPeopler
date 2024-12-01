@@ -1,10 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:my_peopler/src/helpers/helpers.dart';
+import 'package:my_peopler/src/views/profile/myCachedNetworkImage.dart';
 
 class ProfileCard extends StatelessWidget {
-  const ProfileCard({Key? key, required this.imgUrl, this.radius = 45})
-      : super(key: key);
+  const ProfileCard({super.key, required this.imgUrl, this.radius = 45});
   final String imgUrl;
   final double radius;
   @override
@@ -17,22 +15,11 @@ class ProfileCard extends StatelessWidget {
         radius: radius,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(radius),
-          child: CachedNetworkImage(
-            imageUrl: imgUrl,
-            height: radius * 2,
-            width: radius * 2,
-            errorWidget: (context, url, error) {
-              return Center(
-                child: Text(
-                  StorageHelper.userName?[0]??"P",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 22,
-                  ),
-                ),
-              );
-            },
-            fit: BoxFit.cover,
+          child: myCachedNetworkImageCircle(
+            radius * 2,
+            radius * 2,
+            imgUrl,
+            BoxFit.cover,
           ),
         ),
       ),

@@ -11,8 +11,12 @@ class ExpenseBottomSheet extends StatefulWidget {
   final AttendanceController attendanceController;
   final TextEditingController? employeeFilterName;
   final int userId;
- const ExpenseBottomSheet(
-      {super.key, required this.controller, this.employeeFilterName, required this.attendanceController, required this.userId});
+  const ExpenseBottomSheet(
+      {super.key,
+      required this.controller,
+      this.employeeFilterName,
+      required this.attendanceController,
+      required this.userId});
 
   @override
   State<ExpenseBottomSheet> createState() => _MyBottomSheetState();
@@ -28,12 +32,13 @@ class _MyBottomSheetState extends State<ExpenseBottomSheet> {
       builder: (pController) {
         return DraggableScrollableSheet(
             snap: true,
-            initialChildSize: 1,
+            expand: false,
+            // initialChildSize: 1,
             builder: (context, scrollController) {
               return Padding(
                 padding: EdgeInsets.only(
-                  left: 8,
-                  right: 8,
+                  left: 12,
+                  right: 12,
                   bottom: MediaQuery.of(context).viewInsets.bottom,
                 ),
                 child: Column(
@@ -79,14 +84,20 @@ class _MyBottomSheetState extends State<ExpenseBottomSheet> {
                         child: ElevatedButton(
                           onPressed: () async {
                             widget.controller.getExpenses(
-                                type: subOrdinateId != null? 'subordinates' : 'own',
+                                type: subOrdinateId != null
+                                    ? 'subordinates'
+                                    : 'own',
                                 employeeId: subOrdinateId ?? widget.userId,
                                 start: startDate,
                                 end: endDate);
                             widget.attendanceController.refreshAttendance(
-                            subOrdinateId, start:startDate, endDate: endDate, isExpense: true);   
+                                subOrdinateId,
+                                start: startDate,
+                                endDate: endDate,
+                                isExpense: true);
                             widget.employeeFilterName?.clear();
-                            Get.back(result: [startDate,endDate, subOrdinateId]);
+                            Get.back(
+                                result: [startDate, endDate, subOrdinateId]);
                             subOrdinateId = null;
                           },
                           style: ButtonStyle(

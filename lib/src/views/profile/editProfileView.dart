@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,14 +9,15 @@ import 'package:my_peopler/src/helpers/helpers.dart';
 import 'package:my_peopler/src/helpers/imageHelper.dart';
 import 'package:my_peopler/src/resources/color_manager.dart';
 import 'package:my_peopler/src/utils/utils.dart';
+import 'package:my_peopler/src/views/profile/myCachedNetworkImage.dart';
 import 'package:my_peopler/src/widgets/profileTFF.dart';
 import 'package:my_peopler/src/widgets/splashWidget.dart';
 import 'package:my_peopler/src/widgets/submitButton.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EditProfileView extends StatefulWidget {
-  const EditProfileView({Key? key}) : super(key: key);
+  const EditProfileView({super.key});
 
   @override
   State<EditProfileView> createState() => _EditProfileViewState();
@@ -48,10 +48,12 @@ class _EditProfileViewState extends State<EditProfileView> {
     _name.text = user?.name ?? "";
     _email.text = user?.email ?? "";
     _contact.text = user?.contact_no_one ?? "";
-    if(user?.present_address != null){
-      _address.text = (user?.present_address is String?  user?.present_address: '${user!.permanent_address?['province']}${user.permanent_address?['district']}${user.permanent_address?['local_body']}${user.permanent_address?['tole']}${user.permanent_address?['ward']}')!;
-    }else{
-        _address.text = "";
+    if (user?.present_address != null) {
+      _address.text = (user?.present_address is String
+          ? user?.present_address
+          : '${user!.permanent_address?['province']}${user.permanent_address?['district']}${user.permanent_address?['local_body']}${user.permanent_address?['tole']}${user.permanent_address?['ward']}')!;
+    } else {
+      _address.text = "";
     }
     _dob.text = user?.date_of_birth != null
         ? MyDateUtils.getDateOnly(user!.date_of_birth!)
@@ -137,63 +139,36 @@ class _EditProfileViewState extends State<EditProfileView> {
                           bgCol: Pallete.primaryCol.withOpacity(0.2),
                           elevation: 10,
                           child: SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: avatar != null
-                                ? Image.file(
-                                    avatar!,
-                                    fit: BoxFit.cover,
-                                    width: 100,
-                                    height: 100,
-                                  )
-                                : profilePhoto != null
-                                    ? CachedNetworkImage(
-                                        imageUrl: profilePhoto ?? "",
-                                        fit: BoxFit.cover,
-                                        errorWidget: (context, url, error) {
-                                          return Center(
-                                            child: Text(
-                                              StorageHelper.userName?[0] ?? "",
-                                              style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 22),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    // : Center(
-                                    //     child: Image.asset(
-                                    //       MyAssets.camera,
-                                    //       height: 24,
-                                    //       width: 32,
-                                    //     ),
-                                    //   ),
-                                    : Center(
-                                        child: Text(
-                                          StorageHelper.userName?[0] ?? "",
-                                          style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 22),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                          ),
+                              width: 100,
+                              height: 100,
+                              child: avatar != null
+                                  ? Image.file(
+                                      avatar!,
+                                      fit: BoxFit.cover,
+                                      width: 100,
+                                      height: 100,
+                                    )
+                                  : myCachedNetworkImage(
+                                      100.0,
+                                      100.0,
+                                      profilePhoto,
+                                      BorderRadius.all(Radius.circular(50.0)),
+                                      BoxFit.contain,
+                                    )),
                         ),
                       ),
                       Positioned(
-                        top: 0,
-                        right: 0,
-                        child: InkWell(
-                          onTap: () async{
-                            await pickImage(context);
-                          },
-                          child:Icon(Icons.edit_square,
-                          color: ColorManager.primaryCol,
-                          size: 30,
-                          )))
+                          top: 0,
+                          right: 0,
+                          child: InkWell(
+                              onTap: () async {
+                                await pickImage(context);
+                              },
+                              child: Icon(
+                                Icons.edit_square,
+                                color: ColorManager.primaryCol,
+                                size: 30,
+                              )))
                     ],
                   ),
                 ),
@@ -288,6 +263,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                     onPressed: () async {
                       await _editProfile();
                     },
+                    prefixIcon: Icons.person_pin,
                     label: "Save Profile",
                     hPad: 0,
                     isLoading: controller.isUpdatingProfile.value,

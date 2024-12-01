@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_peopler/src/controllers/authController.dart';
@@ -13,7 +11,7 @@ import 'package:my_peopler/src/widgets/myDrawer.dart';
 import 'package:my_peopler/src/widgets/optionCardTile.dart';
 
 class ProfileView extends StatelessWidget {
-  const ProfileView({Key? key}) : super(key: key);
+  const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +34,7 @@ class ProfileView extends StatelessWidget {
         centerTitle: true,
       ),
       body: SizedBox(
-        height: MediaQuery.of(context).size.height-150,
+        height: MediaQuery.of(context).size.height - 150,
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -52,7 +50,6 @@ class ProfileView extends StatelessWidget {
                 title: "Change Password",
                 icon: Icons.password,
                 onTap: () {
-      
                   Get.find<NavController>().toNamed(Routes.CHANGE_PASSWORD);
                 },
               ),
@@ -73,25 +70,25 @@ class ProfileView extends StatelessWidget {
                 title: "Current Location Co-ordinates",
                 icon: Icons.location_on_outlined,
                 onTap: () async {
-                  Get.find<NavController>().toNamed(Routes.LOCATION_COORDINATES_VIEW);
+                  Get.find<NavController>()
+                      .toNamed(Routes.LOCATION_COORDINATES_VIEW);
                 },
               ),
               LogoutBtn(
                 onTap: () {
-                     MessageHelper.showInfoAlert(
-                                        context: context,
-                                        title: 'Logging Out',
-                                        desc: 'Do you want to log out?',
-                                        okBtnText: 'Yes',
-                                        cancelBtnText: 'No',
-                                        btnCancelOnPress: () {
-                                          //Navigator.pop(context);
-                                        },
-                                        btnOkOnPress: () async {
-                                          Get.find<AuthController>().logout();
-                                        },
-                                      );
-                  
+                  MessageHelper.showInfoAlert(
+                    context: context,
+                    title: 'Logging Out',
+                    desc: 'Do you want to log out?',
+                    okBtnText: 'Yes',
+                    cancelBtnText: 'No',
+                    btnCancelOnPress: () {
+                      //Navigator.pop(context);
+                    },
+                    btnOkOnPress: () async {
+                      Get.find<AuthController>().logout();
+                    },
+                  );
                 },
               ),
               SizedBox(
@@ -103,11 +100,4 @@ class ProfileView extends StatelessWidget {
       ),
     );
   }
-
-
-  
-
-  
-
- 
 }

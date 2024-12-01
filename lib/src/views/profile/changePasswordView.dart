@@ -7,7 +7,7 @@ import 'package:my_peopler/src/widgets/profileTFF.dart';
 import 'package:my_peopler/src/widgets/submitButton.dart';
 
 class ChangePasswordView extends StatelessWidget {
-  ChangePasswordView({Key? key}) : super(key: key);
+  ChangePasswordView({super.key});
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _oldPassword = TextEditingController();
   final TextEditingController _newPassword = TextEditingController();
@@ -92,6 +92,7 @@ class ChangePasswordView extends StatelessWidget {
                     onPressed: () async {
                       await _changePassword();
                     },
+                    prefixIcon: Icons.lock_outline_rounded,
                     label: "Change Password",
                     hPad: 0,
                     isLoading: controller.isChangingPassword.value,

@@ -3,16 +3,16 @@ import 'package:my_peopler/src/core/pallete.dart';
 
 class SubmitButton extends StatelessWidget {
   const SubmitButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.label,
     this.hPad = 15,
     this.vPad = 15,
     this.radius = 8,
     this.isLoading = false,
-    this.color
-
-  }) : super(key: key);
+    this.color,
+    this.prefixIcon,
+  });
   final void Function()? onPressed;
   final String label;
   final double hPad;
@@ -20,6 +20,7 @@ class SubmitButton extends StatelessWidget {
   final double radius;
   final bool isLoading;
   final Color? color;
+  final IconData? prefixIcon;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -37,9 +38,22 @@ class SubmitButton extends StatelessWidget {
           ),
           child: isLoading
               ? CircularProgressIndicator()
-              : Text(
-                  label,
-                  style: TextStyle(fontSize: 18),
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (prefixIcon != null) ...[
+                      Icon(
+                        prefixIcon,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      label,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ],
                 ),
         ),
       ),

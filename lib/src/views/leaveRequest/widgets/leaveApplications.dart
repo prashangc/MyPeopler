@@ -3,7 +3,7 @@ import 'package:my_peopler/src/models/models.dart';
 import 'package:my_peopler/src/widgets/leaveRequestCard.dart';
 
 class LeaveApplications extends StatelessWidget {
-  const LeaveApplications({Key? key, required this.leaves}) : super(key: key);
+  const LeaveApplications({super.key, required this.leaves});
   final List<Leave> leaves;
   @override
   Widget build(BuildContext context) {

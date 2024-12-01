@@ -4,13 +4,14 @@ import 'package:my_peopler/src/controllers/controllers.dart';
 import 'package:my_peopler/src/core/pallete.dart';
 import 'package:my_peopler/src/resources/color_manager.dart';
 import 'package:my_peopler/src/routes/appPages.dart';
+import 'package:my_peopler/src/views/leaveRequest/newLeaveRequestView.dart';
 import 'package:my_peopler/src/views/leaveRequest/widgets/leaveApplications.dart';
 import 'package:my_peopler/src/widgets/myDrawer.dart';
 import 'package:my_peopler/src/widgets/no_data_widget.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class LeaveRequetView extends StatefulWidget {
-  LeaveRequetView({Key? key}) : super(key: key);
+  const LeaveRequetView({super.key});
 
   @override
   State<LeaveRequetView> createState() => _LeaveRequetViewState();
@@ -23,6 +24,7 @@ class _LeaveRequetViewState extends State<LeaveRequetView> {
     super.initState();
     Get.find<LeaveController>().callAllApi();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,14 +35,25 @@ class _LeaveRequetViewState extends State<LeaveRequetView> {
         children: [
           FloatingActionButton(
             tooltip: 'Request Leave',
-             heroTag: "Request Leave",
+            heroTag: "Request Leave",
             backgroundColor: ColorManager.primaryCol,
-            onPressed: (){
-               Get.find<NavController>().toNamed(Routes.LEAVE_REQUEST);
-          },
-          child: Icon(Icons.add),
+            onPressed: () async {
+              await Get.bottomSheet(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                ),
+                NewLeaveRequestView(),
+              );
+              // Get.find<NavController>().toNamed(Routes.LEAVE_REQUEST);
+            },
+            child: Icon(Icons.add),
           ),
-          SizedBox(height: kToolbarHeight+10,)
+          SizedBox(
+            height: kToolbarHeight + 10,
+          )
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -77,10 +90,9 @@ class _LeaveRequetViewState extends State<LeaveRequetView> {
           refreshController.refreshCompleted();
         },
         child: GetBuilder<LeaveController>(builder: (leaveController) {
-
-          if(leaveController.isLoading){
+          if (leaveController.isLoading) {
             return Center(child: CircularProgressIndicator());
-          }else if(leaveController.leaves.isEmpty) {
+          } else if (leaveController.leaves.isEmpty) {
             return NoDataWidget();
           }
           return SingleChildScrollView(

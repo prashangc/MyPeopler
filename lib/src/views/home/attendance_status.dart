@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:my_peopler/location_service_repo.dart';
 import 'package:my_peopler/src/controllers/controllers.dart';
 import 'package:my_peopler/src/controllers/sfalocationLogsController.dart';
 import 'package:my_peopler/src/core/constants/secureStorageConstants.dart';
@@ -16,7 +15,6 @@ import 'package:my_peopler/src/helpers/helpers.dart';
 import 'package:my_peopler/src/models/baseResponse.dart';
 import 'package:my_peopler/src/utils/utils.dart';
 import 'package:nepali_date_picker/nepali_date_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/user/user.dart';
 
@@ -252,33 +250,10 @@ class _AttendenceStatusState extends State<AttendenceStatus> {
                     "Total attendance Status",
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-
-                  SizedBox(height: 20.0),
-                  ElevatedButton(
-                    onPressed: () async {
-                      var prefs = await SharedPreferences.getInstance();
-                      int? userId = prefs.getInt("userId");
-                      if (userId != null) {
-                        List<String> file = await LocationServiceRepository
-                            .readLocationForUserId(userId);
-                        MessageHelper.success("FILE LENGTH -> ${file.length}");
-                      } else {
-                        MessageHelper.error("USER ID IS NULL");
-                      }
-                    },
-                    child: Text(
-                      "Check if location tracking",
-                    ),
-                  ),
-
-                  SizedBox(height: 20.0),
-
                   //  controller.isPunching == true
                   //     ? LinearProgressIndicator()
                   //     : SizedBox.shrink(),
-                  SizedBox(
-                    height: 10,
-                  ),
+                  SizedBox(height: 12),
                   StorageHelper.locationAccept!
                       ? SizedBox(
                           height: 70,
