@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
 import 'package:my_peopler/src/controllers/sfaCustomerListController.dart';
 import 'package:my_peopler/src/controllers/sfalocationLogsController.dart';
@@ -169,7 +170,7 @@ class _SfaMenuState extends State<SfaMenu> {
           Get.toNamed(Routes.ESTIMATED_CUSTOMER_REPORT);
         }),
   ];
-
+  bool? boolValue;
   @override
   void initState() {
     super.initState();
@@ -178,6 +179,10 @@ class _SfaMenuState extends State<SfaMenu> {
       await Get.find<SfaCustomerListController>().getSfaCustomerList('daily');
       await Get.find<SfaCustomerListController>().getSfaCustomerList('all');
     });
+  }
+
+  isServiceRunning() async {
+    boolValue = await FlutterBackgroundService().isRunning();
   }
 
   @override
@@ -266,6 +271,15 @@ class _SfaMenuState extends State<SfaMenu> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                FutureBuilder(
+                    future: FlutterBackgroundService().isRunning(),
+                    builder: (c, AsyncSnapshot<bool> data) {
+                      if (data.hasData) {
+                        return Text(data.data.toString());
+                      } else {
+                        return Text("no data");
+                      }
+                    }),
                 //  GetBuilder<SfaCustomerListController>(builder: (controller)
                 //  {
                 //   return _buildDashBoard(context,controller);

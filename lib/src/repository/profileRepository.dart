@@ -215,7 +215,6 @@ class ProfileRepository {
   Future<BaseResponse> sfaLocationLogs(List<Map<String, dynamic>> logs) async {
     try {
       var token = StorageHelper.token;
-
       var response = await client.post(
         endPoint: Endpoints.SFA_LOCATION_LOGS,
         data: {"logs": logs},

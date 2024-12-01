@@ -75,6 +75,7 @@ dependencies:
     path: nepali_date_picker
   nepali_utils: ^3.0.6
   flutter_background_service: ^5.0.10
+  flutter_foreground_task: ^8.16.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

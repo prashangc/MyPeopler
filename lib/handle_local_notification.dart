@@ -17,7 +17,7 @@ class HandleLocalNotification {
         onStart: onStart,
 
         // auto start service
-        autoStart: true,
+        autoStart: false,
         isForegroundMode: false,
         notificationChannelId: 'high_importance_channel',
         initialNotificationTitle: 'Location Tracking',
@@ -36,6 +36,7 @@ class HandleLocalNotification {
         onBackground: onIosBackground,
       ),
     );
+    // await WakelockPlus.toggle(enable: true);
   }
 
   static Future<NotificationDetails> createAndroidNotificationChannel() async {

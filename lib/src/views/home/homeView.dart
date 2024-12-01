@@ -56,6 +56,7 @@ class _HomeViewState extends State<HomeView> {
         StorageHelper.enableBackgroundLocation(false);
       }
       if (Platform.isAndroid) {
+        // keepAppAwake();
         // await enableBackgroundTracking();
       }
       await Get.find<SfaLocationLogsController>().getSharedPreference();
@@ -96,6 +97,10 @@ class _HomeViewState extends State<HomeView> {
                   // int? userId = prefs.getInt("userId");
                   // LocationServiceRepository.clearLocationDataForUserId(userId!);
                   Scaffold.of(context).openDrawer();
+                  // WriteInFile.storeDataInFile(
+                  //     userId: userId,
+                  //     position: await Geolocator.getCurrentPosition());
+                  // FlutterBackgroundService().startService();
                 },
                 icon: Icon(
                   Icons.menu,
@@ -105,11 +110,23 @@ class _HomeViewState extends State<HomeView> {
             title: Text("MyPeopler"),
             actions: [
               IconButton(
-                  onPressed: () {
-                    // Get.find<NavController>().offNamed(Routes.NOTICE);
-                    Get.find<NavController>().toNamed(
-                      Routes.NOTICE,
-                    );
+                  onPressed: () async {
+                    Get.find<NavController>().offNamed(Routes.NOTICE);
+                    // Get.find<NavController>().toNamed(
+                    //   Routes.NOTICE,
+                    // );
+                    // var prefs = await SharedPreferences.getInstance();
+                    // int? userId = prefs.getInt("userId");
+                    // FlutterBackgroundService().invoke("stopService");
+
+                    // if (userId != null) {
+                    //   List<String> file =
+                    //       await LocationServiceRepository.readLocationForUserId(
+                    //           userId);
+                    //   log("__________ ${file.length}");
+                    //   LocationServiceRepository.clearLocationDataForUserId(
+                    //       userId);
+                    // }
                   },
                   icon: Icon(Icons.notifications))
             ],

@@ -1,12 +1,13 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:my_peopler/handle_local_notification.dart';
 import 'package:my_peopler/location_service_repo.dart';
+import 'package:my_peopler/nav.dart';
+import 'package:my_peopler/src/app.dart';
 import 'package:my_peopler/src/core/di/injection.dart';
 import 'package:my_peopler/src/helpers/helpers.dart';
 import 'package:my_peopler/src/models/baseResponse.dart';
@@ -44,10 +45,14 @@ class SfaLocationLogsController extends GetxController {
     if (StorageHelper.liveTracking == "1") {
       StorageHelper.enableBackgroundLocation(true);
       if (Platform.isIOS) {
+        await FlutterBackgroundService().startService();
         FlutterBackgroundService().invoke("setAsBackground");
+        globalBloc.storeData(data: "refresh");
         Fluttertoast.showToast(msg: 'Location Tracking enabled.');
       } else {
+        await FlutterBackgroundService().startService();
         FlutterBackgroundService().invoke("setAsBackground");
+        globalBloc.storeData(data: "refresh");
         Fluttertoast.showToast(msg: 'Location Tracking enabled.');
       }
     } else if (StorageHelper.liveTracking == "") {
@@ -63,17 +68,23 @@ class SfaLocationLogsController extends GetxController {
   convertListStringToSfaLocationModel({required bool? isCheckIn}) async {
     if (isCheckIn != null) {
       if (isCheckIn) {
-        await WriteInFile.storeDataInFile();
+        Position currentLocation = await Geolocator.getCurrentPosition();
+        var prefs = await SharedPreferences.getInstance();
+        int? userId = prefs.getInt("userId");
+        if (userId != null) {
+          await WriteInFile.storeDataInFile(
+            position: currentLocation,
+            userId: userId,
+          );
+        }
       }
     }
     var data = await LocationServiceRepository.readLocationForUserId(
         StorageHelper.userId!);
-    log(data.toString());
     if (data.isNotEmpty) {
       var logs = data.map((input) {
         return SfaLocationData.fromJson(jsonDecode(input)).toJson();
       }).toList();
-      log(logs.toString());
       // Fluttertoast.showToast(msg: logs.toString());
       BaseResponse responseData = await sfaLocationLogs(logs);
 
@@ -83,23 +94,46 @@ class SfaLocationLogsController extends GetxController {
       if (responseData.status == 'success') {
         if (isCheckIn != null) {
           if (isCheckIn) {
-            enableBackgroundTracking();
+            MessageHelper.showInfoAlert(
+                context: Nav.context,
+                title: "Enable Service",
+                btnOkOnPress: () async {
+                  await FlutterBackgroundService().startService();
+                  FlutterBackgroundService().invoke("setAsBackground");
+                });
+            // enableBackgroundTracking();
           } else {
             //checkout
-            HandleLocalNotification.service.invoke("stopService");
+            MessageHelper.showInfoAlert(
+                context: Nav.context,
+                title: "Disable Service",
+                btnOkOnPress: () async {
+                  await FlutterBackgroundService().startService();
+                  FlutterBackgroundService().invoke("stopService");
+                  await LocationServiceRepository.clearLocationDataForUserId(
+                      StorageHelper.userId!);
+                });
+            // HandleLocalNotification.service.invoke("stopService");
             await LocationServiceRepository.clearLocationDataForUserId(
                 StorageHelper.userId!);
           }
         } else {
           await LocationServiceRepository.clearLocationDataForUserId(
               StorageHelper.userId!);
-          WriteInFile.storeDataInFile();
+          Position currentLocation = await Geolocator.getCurrentPosition();
+          var prefs = await SharedPreferences.getInstance();
+          int? userId = prefs.getInt("userId");
+          if (userId != null) {
+            await WriteInFile.storeDataInFile(
+              position: currentLocation,
+              userId: userId,
+            );
+          }
         }
       }
       return responseData;
     } else {
       // return sfaLocationLogs([]);
-      log(data.toString());
       // Show message , No data left in local to sync.
       Fluttertoast.showToast(msg: "No data left in local to sync.");
     }

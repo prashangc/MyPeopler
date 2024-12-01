@@ -1,20 +1,20 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:my_peopler/location_service_repo.dart';
+import 'package:my_peopler/nav.dart';
 import 'package:my_peopler/src/binding/initialBinding.dart';
-import 'package:my_peopler/src/helpers/fileManager.dart';
 import 'package:my_peopler/src/helpers/helpers.dart';
 import 'package:my_peopler/src/resources/theme_manager.dart';
 import 'package:my_peopler/src/routes/appPages.dart';
 import 'package:my_peopler/src/views/others/noInternetView.dart';
 import 'package:my_peopler/src/views/second_in_app_disclourse.dart';
+import 'package:my_peopler/state/state_handler_bloc.dart';
+import 'package:my_peopler/write_in_file.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+StateHandlerBloc globalBloc = StateHandlerBloc();
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -25,7 +25,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Position? locationData;
   SharedPreferences? prefs;
-  int? userId;
 
   @override
   void initState() {
@@ -37,36 +36,13 @@ class _MyAppState extends State<MyApp> {
     locationData = await Geolocator.getCurrentPosition();
     var prefs = await SharedPreferences.getInstance();
     await prefs.reload();
-    userId = prefs.getInt("userId");
     setState(() {});
-  }
-
-  writeDataInTextFile() async {
-    String fileName = "$userId.txt";
-
-    Map<String, dynamic> errorMessage = {
-      'latitude': 0.0,
-      'longitude': 0.0,
-      'accuracy': 0.0,
-      'altitude': 0.0,
-      'speed': 0.0,
-      'speed_accuracy': 0.0,
-      'heading': 0.0,
-      'time': '2024-06-17 04:00:00',
-      'is_mocked': false,
-      'provider': '',
-    };
-
-    FileManager.writeContentInFile(fileName, json.encode(errorMessage));
-
-    List<String> list =
-        await LocationServiceRepository.readLocationForUserId(userId!);
-    log("length tst = ${list.length}");
   }
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      navigatorKey: Nav.navKey,
       title: 'MyPeopler',
       debugShowCheckedModeBanner: false,
       theme: getApplicationTheme(),
@@ -74,38 +50,44 @@ class _MyAppState extends State<MyApp> {
       initialRoute: getInitialRoute(),
       getPages: AppPages.routes,
       builder: (context, child) {
-        return StreamBuilder(
-          stream: Connectivity().onConnectivityChanged,
-          builder: (context, snapshot) {
-            final result = snapshot.data;
-            switch (result) {
-              case ConnectivityResult.none:
-                return NoInternetView();
-              default:
-                return StreamBuilder(
-                    stream: Geolocator.getServiceStatusStream(),
-                    builder: (context, snapshot) {
-                      final result = snapshot.data;
-                      switch (result) {
-                        // Enter the log location off in lat, long
-                        case ServiceStatus.disabled:
-                          Fluttertoast.showToast(
-                              msg: 'Background service triggered.');
-                          writeDataInTextFile();
-                          return SecondInAppDisclourse(
-                            hasButton: false,
-                          );
-                        case null:
-                          return child!;
-                        case ServiceStatus.enabled:
-                          return child!;
-                        default:
-                          return child!;
-                      }
-                    });
-            }
-          },
-        );
+        return StreamBuilder<dynamic>(
+            stream: globalBloc.stateStream,
+            builder: (c, s) {
+              return Center(
+                child: StreamBuilder(
+                  stream: Connectivity().onConnectivityChanged,
+                  builder: (context, snapshot) {
+                    final result = snapshot.data;
+                    switch (result) {
+                      case ConnectivityResult.none:
+                        return NoInternetView();
+                      default:
+                        return StreamBuilder(
+                            stream: Geolocator.getServiceStatusStream(),
+                            builder: (context, snapshot) {
+                              final result = snapshot.data;
+                              switch (result) {
+                                // Enter the log location off in lat, long
+                                case ServiceStatus.disabled:
+                                  Fluttertoast.showToast(
+                                      msg: 'Background service triggered.');
+                                  WriteInFile.writeStaticDataInTextFile();
+                                  return SecondInAppDisclourse(
+                                    hasButton: false,
+                                  );
+                                case null:
+                                  return child!;
+                                case ServiceStatus.enabled:
+                                  return child!;
+                                default:
+                                  return child!;
+                              }
+                            });
+                    }
+                  },
+                ),
+              );
+            });
       },
     );
   }

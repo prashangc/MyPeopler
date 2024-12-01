@@ -92,31 +92,44 @@ void onStart(ServiceInstance service) async {
 
   service.on('stopService').listen((event) {
     service.stopSelf();
+    // WakelockPlus.toggle(enable: false);
   });
 
-  // bring to foreground
   Timer.periodic(const Duration(seconds: 1), (timer) async {
     if (service is AndroidServiceInstance) {
+      log('OUTPUT --> BG WORKING');
+      // MessageHelper.success("listening");
       var prefs = await SharedPreferences.getInstance();
       int? userId = prefs.getInt("userId");
       if (userId != null) {
         List<String> listOfLocalData =
             await LocationServiceRepository.readLocationForUserId(userId);
         if (listOfLocalData.isNotEmpty) {
-          LocationServiceRepository.backgroundLocationFetch(listOfLocalData);
+          try {
+            Position currentLocation = await Geolocator.getCurrentPosition();
+            LocationServiceRepository.backgroundLocationFetch(
+              listOfLocalData,
+              currentLocation,
+              userId: userId,
+            );
+          } catch (_) {
+            LocationServiceRepository.backgroundLocationFetch(
+              listOfLocalData,
+              null,
+              userId: userId,
+            );
+          }
         } else {
-          log('FILE IS EMPTY');
+          log('OUTPUT --> BG WORKING BUT FILE IS EMPTY SO DO NOTHINGS');
         }
       }
     }
-
-    Position? position = await Geolocator.getCurrentPosition();
-    service.invoke(
-      'update',
-      {
-        "current_date": DateTime.now().toIso8601String(),
-        "lat": position.latitude
-      },
-    );
+    // try {
+    //   Position? position = await Geolocator.getCurrentPosition();
+    //   HandleLocalNotification.showNotification(
+    //     title: "Bg service running successfully.",
+    //     body: "Listening Lat -> ${position.latitude}",
+    //   );
+    // } catch (_) {}
   });
 }

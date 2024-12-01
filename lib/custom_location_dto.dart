@@ -8,7 +8,7 @@ class LocationDto {
   final double speed;
   final double speedAccuracy;
   final double heading;
-  final double time;
+  final String time;
   final bool isMocked;
   final String provider;
 
